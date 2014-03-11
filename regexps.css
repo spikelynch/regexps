@@ -1,0 +1,21 @@
+/* Style sheet for regexp tutorial */
+
+/* Styles for highlighting examples */
+
+code { color: blue; font-weight: bold }
+
+pre code { color: black; font-weight: normal }
+
+span.regexp { color: blue; font-weight: bold }
+span.match { color: green }
+span.mismatch { color: darkred }
+span.matchre {
+    background: #eee;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+div#footer {
+  font-size: 75%;
+  font-style: italic;
+}

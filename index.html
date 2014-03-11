@@ -1,1 +1,285 @@
-Hello world
+<html>
+  <head>
+    <title>Twitter regexp muting</title>
+    <link href="http://kevinburke.bitbucket.org/markdowncss/markdown.css" rel="stylesheet" />
+    <link type="text/css" rel="stylesheet" href="regexps.css" />
+  </head>
+  <body>
+
+  <h1 id="twitter-regexp-muting">Twitter regexp muting</h1>
+  <p><em>Improve your Twitter experience with regular expressions</em></p>
+<p><em>Mike Lynch 2014</em></p>
+<p>My favourite Twitter client, <a href="http://tapbots.com/software/tweetbot/">Tweetbot</a>, allows muting not just by keyword but by regular expressions. Regular expressions, or regexps, are an incredibly handy way to match patterns in text: they date back to the earliest years of computing and are available in most programming languages.</p>
+<p>About a month ago, I posted a regexp to filter out tweets about a certain Australian drug smuggler, and I was asked if I had any other examples. It occurred to me that they could form a quick introductory tutorial to regexps in general.</p>
+<p>First, an unavoidable jargon intermission: I'm going to use the programming term &quot;string&quot; to refer to any sequence of characters, because non-jargon terms like &quot;word&quot; or &quot;sentence&quot; are not general enough and would just confuse things, and otherwise we'll all get sick of me repeating the phrase &quot;sequence of characters&quot;.</p>
+<p>This tutorial isn't a complete description of regular expressions - people have written whole books on that. It should give you a basic understanding of the syntax of regexps, explain how a couple of my filters work and allow you to start building your own.</p>
+
+<h2 id="regexp-basics">1. Regexp basics</h2>
+
+<p>A regexp is a string which is used to test other strings to see if they either match or don't match a pattern. In the context of Tweetbot's mute feature, the regexp behaves like a special keyword filter which is used to test the tweets in your timeline: any tweet that matches is muted. To try to explain what matching means, I'm going to start with an irritatingly opaque definition:</p>
+<p><em>A string matches a regexp if every part of the regexp matches a part of the string in the right order.</em></p>
+<p>We'll flesh this out by building a regexp which will stop me from seeing tweets with hashtags like <em>#auspol</em>.</p>
+
+<h2 id="ordinary-characters">2. Ordinary characters</h2>
+
+<p>The simplest kind of &quot;part&quot; is an <em>ordinary character</em>. Letters and numbers on their are ordinary, as are some punctuation marks. An ordinary character matches if it is the same as a character in the string. If a regexp is just a sequence of ordinary characters, it will match any tweet containing that entire sequence.</p>
+
+<pre><code><span class="regexp">#auspol</span>
+
+<span class="match">&gt; You leftards all suck <span class="matchre">#auspol</span></span>
+
+<span class="mismatch">  Get bent #nswpol</span></code></pre>
+
+<p>In the examples, the regexp itself appears in <span
+class="regexp">blue</span>, matched tweets are in <span class="match">green
+(with a &gt; next to them)</span> and tweets that don't match in <span
+class="mismatch">dark red</span>. The actual characters which the regexp is
+matching against are highlighted like: <span class="match"><span
+class="matchre">this</span></span>.</p>
+
+<p>Note that although letters and numbers are all ordinary characters, many symbols and punctuation marks are &quot;ordinary&quot; (in the regexp sense) too, like hash &quot;#&quot;.</p>
+<p>Matching nothing but ordinary characters is exactly the same as a keyword match. Boring. Can we do something better?</p>
+<h2 id="the-wildcard">3. The wildcard</h2>
+<p>Tweetbot's regexp functionality is tucked away. If you use any special characters when typing in a keyword mute, a switch to turn on regular expressions will appear under the keyword field. The special characters are:</p>
+<p><code>.*+?$^\[]{}()</code></p>
+
+<p><code>.</code> is a wildcard: it will match any character. So
+<code>#...pol</code> matches a "#" followed by any three characters followed by
+&quot;pol&quot;.</p>
+
+
+<pre><code><span class="regexp">#...pol</span>
+
+<span class="match">&gt; Down with things! <span class="matchre">#auspol</span></span>
+
+<span class="match">&gt; Feelpinions! <span class="matchre">#nswpol</span></span>
+
+<span class="match">&gt; Bikies! <span class="matchre">#qldpol</span></span>
+
+<span class="mismatch">  Independence now! #scotlandpol</span></code></pre>
+
+<p>The regexp fails to weed out tweets with my (invented) "#scotlandpol" hashtag
+because there are too many characters between "#" and "pol".  But I don't want to
+have to make a series of mutes like</p>
+
+<pre><code><span class="regexp">#...pol
+#....pol
+#.....pol</span></code></pre>
+
+<p>Luckily, I don't need to. It's at this point that regexps start getting genuinely powerful.</p>
+
+<h2 id="repetition-repetition-repetition">4. Repetition, repetition, repetition</h2>
+
+<p>If we follow part of a regexp by <code>+</code> it will try to match against one or more repetitions of that part.</p>
+<p>I should clarify what I mean by &quot;part&quot; means a little here: an ordinary character is a part, but so is <code>.</code> and other special characters or combinations thereof. The simplest way to put it is that a part is any subset of a regexp which would make sense as a regexp on its own. (We'll get more precise about this when we get to groups.)</p>
+
+<p>Since <code>.</code> matches any character, <code>.+</code> is a single
+pattern which is equivalent to <code>.</code>, <code>..</code>,
+<code>...</code>, <code>....</code>, and so on. This lets us build a regexp
+which will match all whatever-pol hashtags:</p>
+
+<pre><code><span class="regexp">#.+pol</span>
+
+<span class="match">&gt; You suck <span class="matchre">#auspol</span></span>
+
+<span class="match">&gt; I hate people <span class="matchre">#nswpol</span></span>
+
+<span class="match">&gt; You are worse than germs <span class="matchre">#vicpol</span></span>
+
+<span class="match">&gt; Gold for Australia! woo! <span class="matchre">#worldpol</span>edancing</span></code></pre>
+
+<p>We've hit one of the problems with regexps: it's really easy to match more than we intended to. Our new regexp filters out the hashtag of the World Pole Dancing championship which we are keenly watching on Channel 11, because it contains the string &quot;#worldpol&quot;, which matches <code>#.+pol</code>.</p>
+
+<p>How can we build a regexp which will match only those hashtags which <em>end</em> in pol? We need to make sure that the character following 'pol' is not another letter or number: that is, we need a part which will match a space.</p>
+
+<h2 id="character-classes">5. Character classes</h2>
+
+<p>Regexps have built-in character classes: these are like <code>.</code> but only match certain kinds of characters.</p>
+
+<p><code>\w</code> matches &quot;word&quot; characters (a-b, A-Z, 0-9 and _)</p>
+<p><code>\d</code> matches digits</p>
+<p><code>\s</code> matches whitespace characters (space, tabs)</p>
+<p><code>\n</code> matches returns/linefeeds</p>
+
+<p>So, if we add <code>\s</code> to the end of our regexp, we can see our poledancing tweets again:</p>
+
+<pre><code><span class="regexp">#.+pol\s</span>
+
+<span class="match">&gt; You guys all suck <span class="matchre">#auspol </span>is for losers</span>
+
+<span class="mismatch">  HOTT #worldpoledancing</span>
+
+<span class="mismatch">  Abbott4lyfe #auspol</span>
+
+<span class="mismatch">  GLADYS *shakes fist* #nswpol</span></code></pre>
+
+<p>Bugger. We broke our regexp. Because it expects hashtags to be followed by a space, it doesn't match those tweets with the hashtag at the end of the string.</p>
+
+<h2 id="boundaries">6. Boundaries</h2>
+
+<p>Luckily, there's another special character designed for exactly this problem: <code>\b</code> matches the boundary of a word</p>
+
+<p>So far, all of our special characters have matched a particular character or
+characters in the target string. <code>\b</code> is different: it matches
+succesfully if it occurs at the &quot;edge&quot; between a word and either a
+non-word character or the start or end of the whole string. (Technically it's a
+&quot;zero-width assertion&quot; which I mention just because I like the
+phrase.)</p>
+
+<pre><code><span class="regexp">#.+pol\b</span>
+
+<span class="match">&gt; Shorten in bread <span class="matchre">#auspol</span></span>
+
+<span class="mismatch">  Nice legs #worldpoledancing</span></code></pre>
+
+<p>We've finally found a regexp which matches political hashtags, without also
+matching hashtags that happen to contain the characters &quot;pol&quot;
+somewhere other than at the end.</p>
+
+<p>Two other widely-used boundary characters are <code>^</code> and
+<code>$</code>, which allow you to match at the beginning or the end of the
+entire string.</p>
+
+<h2 id="another-example-dotmentions">7. Another example: dotmentions</h2>
+
+<p>I dislike the practice of dotmentioning - when you reply to someone but put a period in front of their name so that your other followers can see your reply. To me, it's a bit like inviting other people to join in on a fight, so I'd rather not see them.</p>
+<p>A regexp to match tweets which start with something like &quot;.<span class="citation">@username</span>&quot; will need a couple of features which I haven't explained yet, so it's worth going through in detail. It will also be typical of many useful regexps in that it looks a bit like a comic book character swearing.</p>
+<p>We want the regexp to match only at the start of a tweet, so we start with the special character for head:</p>
+<p><code>^</code></p>
+
+<p>The next thing we want to match is the full stop: however, as we've seen,
+<code>.</code> is a special character which will match anything. To tell the
+regexp parser to ignore the special meaning and just use it literally, we add a
+full stop but precede it with a backslash: <code>\</code>.</p>
+
+<p><code>^\.</code></p>
+
+<p>Note that you use this technique to match the literal value of any special
+character. Including the backslash itself. The sequence <code>\\</code> matches
+a backslash and is the sort of thing that causes the regexp disease known as
+&quot;leaning toothpick syndrome&quot;.</p>
+
+<p>We now have a regexp which will match all tweets starting with a full stop. To limit this to only dotmentions, we add an &quot;@&quot;, which is not a special character, so there's no need for a <code>\</code> this time:</p>
+<p><code>^\.@</code></p>
+<p>We don't really need to add anything after the &quot;@&quot;, unless we are only trying to filter out dotmentions to a particular user:</p>
+<p><code>^\.@TonyAbbottMHR</code></p>
+<p>The problem with the regexp <code>^\.@</code> is that some people put a space between the dot and the username they're replying to:</p>
+
+<pre><code><span class="regexp">^\.@</span>
+
+<span class="match">&gt; <span class="matchre">.@</span>TonyAbbottMHR THIS CRIMINAL GOVERNMENT</span>
+
+<span class="mismatch">  . @TurnbullMalcolm If only the Czar knew!</span>
+
+<span class="mismatch">  .  @spikelynch People should use more spaces!</span></code></pre>
+
+<p>We've already seen that <code>+</code> is a special character which when placed after part of a regexp, will allow that part to match one or more times. In this case, we want to match both tweets with one or more spaces between &quot;.&quot; and &quot;@&quot;, and tweets with no spaces at all. To match &quot;none or more&quot; of a pattern, we can use the special character <code>*</code> after the whitespace character class <code>\s</code>:</p>
+<p><code>^\.\s*@</code></p>
+<p>The <code>\s*</code> matches any amount of whitespace, including no whitespace at all, so this will match any tweet that starts with &quot;.@&quot;, or a &quot;.&quot; and a &quot;@&quot; separated by whitespace.</p>
+<p>Another useful repetition modifier is <code>?</code>, which matches none or one of a pattern. For example:</p>
+
+<pre><code><span class="regexp">ca?t</span>
+
+<span class="match">&gt; Archite<span class="matchre">ct</span></span>
+
+<span class="match">&gt; Black <span class="matchre">cat</span></span>
+
+<span class="mismatch">  gatattcaataca</span></code></pre>
+
+<p>The combination of the full stop and asterisk - <code>.*</code> - is a common idiom in regexps because it matches none or more of anything: it's useful for when you don't care or know about what goes in between the things you're actually looking for.</p>
+<p>For example, this useful regexp mutes all tweets with three or more hashtags:</p>
+
+<pre><code><span class="regexp">#.*#.*#</span>
+
+<span class="mismatch">  A tweet with one #hashtag</span>
+
+<span class="mismatch">  A tweet with #two #hashtags</span>
+
+<span class="match">&gt; A tweet <span class="matchre">#with #three #</span>hashtags</span>
+
+<span class="match">&gt; A <span class="matchre">#tweet #with #</span>four #hashtags</span>
+</code></pre>
+
+<p>Whatever is between the hashes will be matched by <code>.*</code> (and we
+  don't need to worry about matching anything after the third hash).</p>
+
+
+<h2 id="more-character-classes">8. More character classes</h2>
+<p>Returning to how this whole exercise got started: in early February someone observed that it was difficult to mute a certain Australian drug mule's name because no-one could remember how to spell it. Matching a bunch of variants is exactly where regexps come in handy:</p>
+<pre><code><span class="regexp">[sS]?[cC]?hap+el+e</span></code></pre>
+<p>In addition to the character classes mentioned above (<code>\w</code>, <code>\d</code> and <code>\s</code>), you can craft your own. Any group of characters in square brackets <code>[]</code> will be matched against a single occurrence of any of the characters. For example:</p>
+<pre><code><span class="regexp">[sS]</span> - matches &quot;s&quot; or &quot;S&quot;
+<span class="regexp">[cC]</span> - matches &quot;c&quot; or &quot;C&quot;</code></pre>
+<p>This highlights an important point about regexps: they are case-sensitive by default. While keyword mutes in Tweetbot are case-insensitive - &quot;Abbott&quot; will match &quot;ABBOTT&quot; or &quot;Abbott&quot; or &quot;aBboTt&quot; - once you activate the regexp switch, you need to remember that &quot;s&quot; and &quot;S&quot; are now being treated as different characters.</p>
+<p>We can now break down the Corby filter:</p>
+
+<pre><code><span class="regexp">[sS]?</span>     - nothing, or one &quot;S&quot; or &quot;s&quot;
+<span class="regexp">[cC]?</span>     - nothing, or one &quot;C&quot; or &quot;c&quot;
+<span class="regexp">ha</span>        - exactly &quot;ha&quot;
+<span class="regexp">p+</span>        - one or more occurences of &quot;p&quot;
+<span class="regexp">e</span>         - exactly &quot;e&quot;
+<span class="regexp">l+</span>        - one or more occurences of &quot;l&quot;
+<span class="regexp">e</span>         - exactly &quot;e&quot;</code></pre>
+
+<p>Here's how this pattern will work against some variants of Schappelle:</p>
+
+<pre><code><span class="regexp">[sS]?[cC]?hap+el+e</span>
+
+<span class="match">&gt; <span class="matchre">Schappelle</span></span>
+
+<span class="match">&gt; <span class="matchre">Chapele</span></span>
+
+<span class="match">&gt; <span class="matchre">SChappppppppppellllllle</span></span>
+
+<span class="match">&gt; <span class="matchre">hapele</span></span>
+
+<span class="mismatch">  chapel</span></code></pre>
+
+<p>Note that because both the <code>[Ss]</code> and <code>[Cc]</code> parts are
+  optional, "hapele" matches.</p>
+
+<h2 id="groups">9. Groups</h2>
+<p>Suppose I wanted to filter out tweets with repetitions of something bigger than a single character: for example, I might be OK with people saying &quot;lol&quot;, but draw the line at &quot;lolol&quot;, much less &quot;lololololol&quot;. We can match a repeated group of characters by putting parentheses &quot;()&quot; around the group and then using &quot;+&quot;:</p>
+<p><code>(ol)+</code> - matches &quot;ol&quot;, &quot;olol&quot;, &quot;ololol&quot;, etc.</p>
+<p><code>lol(ol)+</code> - matches &quot;lolol&quot;, &quot;lololol&quot;, etc, but not &quot;lol&quot;</p>
+<p>In section 3 I was kind of vague about what a &quot;part&quot; of a regexp was: we can be more definite now. A part is either a character, a &quot;.&quot; or a character class, or a subpattern as grouped in parentheses. Any of these kinds of part can be followed by one of the repetition operators (<code>+</code>, <code>?</code>, <code>*</code>).</p>
+
+<h2 id="alternatives">9. Alternatives</h2>
+
+<p>The grouping parentheses are often used in conjunction with the pipe
+<code>|</code> character, which is used to match alternatives. Rather than use
+character classes to capture the variant schapellings of Schapelle, I could have
+explicitly listed alternatives, as follows:</p>
+
+<pre><code><span class="regexp">(Sch|Ch|Sh)ap+ell</span>
+
+<span class="match">&gt; <span class="matchre">Schappell</span>e</span>
+
+<span class="match">&gt; <span class="matchre">Chapell</span>e</span>
+
+<span class="mismatch">appellate court</span></code></pre>
+
+<p>The alternatives inside a group don't have to be all ordinary characters - they can include any of the special characters, character classes or repetition operators we've seen so far, including alternatives and groups. Although this sort of thing is massive overkill if you're just filtering tweets, and leads to the kind of intractably unreadable regexps that have given them a bad reputation in certain circles.</p>
+<p>An exercise for the reader: it should be possible to craft a mute filter which would match tweets which @-mention an Australian politician, by looking for all usernames containing parliamentary abbreviations like MP, MHR, MLC, etc. Let me know if you come up with one.</p>
+
+<h2 id="conclusion">11. Conclusion</h2>
+
+<p>This tutorial only scratches the surface of what regexps can do, although it
+should let you build a lot of interesting and useful mute filters. Many aspects
+of regexp syntax and standard functionality, like capturing substrings of
+matched strings, have been left out entirely as they're not relevant to Twitter
+filtering. Most dynamic programming languages have a dialect of regexps built in
+or available in a library, and there are many books and references out
+there.</p>
+
+<p>Tweetbot's mute function lets you test regexps against the tweets in your
+  current timeline to see which ones match, and there are plenty of regexp
+  testers on the web, like <a href="http://regexpal.com/">RegexPal</a>.</p>
+
+<p>I've tested all of the patterns in Tweetbot, but if you find any mistakes,
+or have any other comments or suggestions, let me know on Twitter at <a href="http://twitter.com/spikelynch">@spikelynch</a>.</p>
+
+<div id="footer">Mike Lynch - v1.0 - March 2014</div>
+
+</body>
+</html>

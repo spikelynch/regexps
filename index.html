@@ -9,9 +9,13 @@
   <h1 id="twitter-regexp-muting">Twitter regexp muting</h1>
   <p><em>Improve your Twitter experience with regular expressions</em></p>
 <p><em>Mike Lynch 2014</em></p>
-<p>My favourite Twitter client, <a href="http://tapbots.com/software/tweetbot/">Tweetbot</a>, allows muting not just by keyword but by regular expressions. Regular expressions, or regexps, are an incredibly handy way to match patterns in text: they date back to the earliest years of computing and are available in most programming languages. (test)</p>
+
+<p>My favourite Twitter client, <a href="http://tapbots.com/software/tweetbot/">Tweetbot</a>, allows muting not just by keyword but by regular expressions. Regular expressions, or regexps, are an incredibly handy way to match patterns in text: they date back to the earliest years of computing and are available in most programming languages.</p>
+
 <p>About a month ago, I posted a regexp to filter out tweets about a certain Australian drug smuggler, and I was asked if I had any other examples. It occurred to me that they could form a quick introductory tutorial to regexps in general.</p>
+
 <p>First, an unavoidable jargon intermission: I'm going to use the programming term &quot;string&quot; to refer to any sequence of characters, because non-jargon terms like &quot;word&quot; or &quot;sentence&quot; are not general enough and would just confuse things, and otherwise we'll all get sick of me repeating the phrase &quot;sequence of characters&quot;.</p>
+
 <p>This tutorial isn't a complete description of regular expressions - people have written whole books on that. It should give you a basic understanding of the syntax of regexps, explain how a couple of my filters work and allow you to start building your own.</p>
 
 <h2 id="regexp-basics">1. Regexp basics</h2>
@@ -22,7 +26,10 @@
 
 <h2 id="ordinary-characters">2. Ordinary characters</h2>
 
-<p>The simplest kind of &quot;part&quot; is an <em>ordinary character</em>. Letters and numbers on their are ordinary, as are some punctuation marks. An ordinary character matches if it is the same as a character in the string. If a regexp is just a sequence of ordinary characters, it will match any tweet containing that entire sequence.</p>
+<p>The simplest kind of &quot;part&quot; is an <em>ordinary character</em>.
+Letters and numbers are ordinary, as are some punctuation marks. An ordinary
+character matches itself, so if a regexp is just a sequence of ordinary
+characters, it will match any tweet containing that entire sequence.</p>
 
 <pre><code><span class="regexp">#auspol</span>
 
@@ -70,8 +77,14 @@ have to make a series of mutes like</p>
 
 <h2 id="repetition-repetition-repetition">4. Repetition, repetition, repetition</h2>
 
-<p>If we follow part of a regexp by <code>+</code> it will try to match against one or more repetitions of that part.</p>
-<p>I should clarify what I mean by &quot;part&quot; means a little here: an ordinary character is a part, but so is <code>.</code> and other special characters or combinations thereof. The simplest way to put it is that a part is any subset of a regexp which would make sense as a regexp on its own. (We'll get more precise about this when we get to groups.)</p>
+<p>If we follow part of a regexp by <code>+</code> it will try to match against
+one or more repetitions of that part.</p>
+
+<p>I should clarify what &quot;part&quot; means a little here: an ordinary
+character is a part, but so is a full stop <code>.</code> and other special
+characters or character combinations. The simplest way to put it is that a part
+is a portion of a regexp which makes sense as a regexp on its own. (We'll get
+more precise about this when we get to groups.)</p>
 
 <p>Since <code>.</code> matches any character, <code>.+</code> is a single
 pattern which is equivalent to <code>.</code>, <code>..</code>,

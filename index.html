@@ -279,7 +279,7 @@ explicitly listed alternatives, as follows:</p>
 
 <span class="match">&gt; <span class="matchre">Chapell</span>e</span>
 
-<span class="mismatch">appellate court</span></code></pre>
+<span class="mismatch">  appellate court</span></code></pre>
 
 <p>The alternatives inside a group don't have to be all ordinary characters - they can include any of the special characters, character classes or repetition operators we've seen so far, including alternatives and groups. Although this sort of thing is massive overkill if you're just filtering tweets, and leads to the kind of intractably unreadable regexps that have given them a bad reputation in certain circles.</p>
 <p>An exercise for the reader: it should be possible to craft a mute filter which would match tweets which @-mention an Australian politician, by looking for all usernames containing parliamentary abbreviations like MP, MHR, MLC, etc. Let me know if you come up with one.</p>

@@ -10,7 +10,7 @@
   <p><em>Improve your Twitter experience with regular expressions</em></p>
 <p><em>Mike Lynch 2014</em></p>
 
-<p>My favourite Twitter client, <a href="http://tapbots.com/software/tweetbot/">Tweetbot</a>, allows muting not just by keyword but by regular expressions. Regular expressions, or regexps, are an incredibly handy way to match patterns in text: they date back to the earliest years of computing and are available in most programming languages.</p>
+<p>My favourite Twitter client, <a href="http://tapbots.com/software/tweetbot/">Tweetbot</a>, allows muting not just by keyword but by regular expressions. Regular expressions, or regexps, are an incredibly handy way to match patterns in text: they date back to the earliest years of computing and are available in most programming languages. </p>
 
 <p>About a month ago, I posted a regexp to filter out tweets about a certain Australian drug smuggler, and I was asked if I had any other examples. It occurred to me that they could form a quick introductory tutorial to regexps in general.</p>
 
@@ -186,8 +186,17 @@ a backslash and is the sort of thing that causes the regexp disease known as
 
 <span class="mismatch">  .  @spikelynch People should use more spaces!</span></code></pre>
 
-<p>We've already seen that <code>+</code> is a special character which when placed after part of a regexp, will allow that part to match one or more times. In this case, we want to match both tweets with one or more spaces between &quot;.&quot; and &quot;@&quot;, and tweets with no spaces at all. To match &quot;none or more&quot; of a pattern, we can use the special character <code>*</code> after the whitespace character class <code>\s</code>:</p>
+<p>(The second example was shamelessly stolen from <a
+href="https://twitter.com/manthatcooks/status/435367367657287680">@manthatcooks</a>.)
+We've already seen that <code>+</code> is a special character which when placed
+after part of a regexp, will allow that part to match one or more times. In this
+case, we want to match both tweets with one or more spaces between &quot;.&quot;
+and &quot;@&quot;, and tweets with no spaces at all. To match &quot;none or
+more&quot; of a pattern, we can use the special character <code>*</code> after
+the whitespace character class <code>\s</code>:</p>
+
 <p><code>^\.\s*@</code></p>
+
 <p>The <code>\s*</code> matches any amount of whitespace, including no whitespace at all, so this will match any tweet that starts with &quot;.@&quot;, or a &quot;.&quot; and a &quot;@&quot; separated by whitespace.</p>
 <p>Another useful repetition modifier is <code>?</code>, which matches none or one of a pattern. For example:</p>
 
@@ -289,8 +298,9 @@ there.</p>
   current timeline to see which ones match, and there are plenty of regexp
   testers on the web, like <a href="http://regexpal.com/">RegexPal</a>.</p>
 
-<p>I've tested all of the patterns in Tweetbot, but if you find any mistakes,
-or have any other comments or suggestions, let me know on Twitter at <a href="http://twitter.com/spikelynch">@spikelynch</a>.</p>
+<p>I've tested all - well, most - of the above patterns in Tweetbot, but if you
+find any mistakes, or have any other comments or suggestions, let me know on
+Twitter at <a href="http://twitter.com/spikelynch">@spikelynch</a>.</p>
 
 <div id="footer">Mike Lynch - v1.0 - March 2014</div>
 
